@@ -34,23 +34,23 @@ int main(void){
 
 **Demos equivalent**
 ```
-main() : int {
-  age : int
-  input("Enter your age: {}", age)
+fn main() : int {
+    age : int
+    input("Enter your age: {}", age)
 
-  println("You are {} years old", age)
+    println("You are {} years old", age)
 
-  // Optional indented blocks
-  // Curly braces also work
-  switch age:
-    < 18:
-      println("You are a minor")
-    < 50:
-      println("You are {} years away from your midlife crisis", 50 - age)
-    else:
-      println("You are old and crinkly")
+    // Optional indented blocks
+    // Curly braces also work
+    switch age:
+        < 18:
+            println("You are a minor")
+        < 50:
+            println("You are {} years away from your midlife crisis", 50 - age)
+        else:
+            println("You are old and crinkly")
 
-  ret age
+    return age
 }
 ```
 As you can see, there are no semicolons, no fn or var keywords and also indented blocks. The indented blocks are optional; the default is {} like most languages.
@@ -82,21 +82,21 @@ struct Box : Shape {
 // Abstract class
 // poly = virtual, stands for polymorphic
 abstract Shape = 
-  abstract poly area() : int
-  abstract poly perimeter() : int
+    abstract poly area() : int
+    abstract poly perimeter() : int
 
 // Child class of shape
 class Box from Shape {
-  pub:
-  width, height : int
+    pub:
+    width, height : int
 
-  // Both parameters are of type int
-  ctor(width, height : int) =
-    me.[width, height] = width, height
-  
-  // ovr = override
-  ovr area() = width * height
-  ovr perimeter() = 2 * (width + height)
+    // Both parameters are of type int
+    ctor(width, height : int) =
+        me.[width, height] = width, height
+    
+    // ovr = override
+    ovr area() = width * height
+    ovr perimeter() = 2 * (width + height)
 }
 ```
 
@@ -149,35 +149,35 @@ fn main() {
 **Demos equivalent**
 ```
 trait Animal {
-  getter description : str
-  make_sound() : none
+    getter description : str
+    make_sound() : none
 }
 
 class Dog =
-  name : str
+    name : str
 
-  trait Animal:
-  // Types are already known, no need to repeat
-  
-  getter description = "Dog named {}".format(name)
-  
-  make_sound() =
-    println("Woof Woof")
+    trait Animal:
+    // Types are already known, no need to repeat
+    
+    getter description = "Dog named {}".format(name)
+    
+    make_sound() =
+        println("Woof Woof")
 
 class Chihuahua from Dog =
-  trait Animal:
-  
-  make_sound() =
-    println("Waf Waf Waf")
+    trait Animal:
+    
+    make_sound() =
+        println("Waf Waf Waf")
 
-main() {
-  dog := Dog{"Max"}
-  println("{}", dog.description)
-  dog.make_sound()
+fn main() {
+    dog := Dog{"Max"}
+    println("{}", dog.description)
+    dog.make_sound()
 
-  chihuahua = Chihuahua{"Terry"}
-  println("{}", chihuahua.description)
-  chihuahua.make_sound()
+    chihuahua = Chihuahua{"Terry"}
+    println("{}", chihuahua.description)
+    chihuahua.make_sound()
 }
 ```
 
@@ -230,17 +230,17 @@ type Value = i64 | f64 | bool | char | str | none
 // format would have default implementation that would use
 // the current value's implementation
 trait format for Value {
-  format(fmt) =
-    fmt.write("{}({})", me.type.name, me.value)
+    format(fmt) =
+        fmt.write("{}({})", me.type.name, me.value)
 }
 
 get_number(v : Value &r) : f64? {
-  match v {
-    i64 | f64:
-      ret (f64) v,
-    else:
-      ret none
-  }
+    match v {
+        i64 | f64:
+            ret (f64) v,
+        else:
+            ret none
+    }
 }
 
 // To make get_number() a read-only property:
@@ -248,29 +248,29 @@ impl Value {
   getter number = get_number(me)
 }
 
-main() {
-  v : Value = 5
-  println("v = {}", v)
+fn main() {
+    v : Value = 5
+    println("v = {}", v)
 
-  result : Value
-  match v {
-    i64(x):
-      result = x + 10
-    f64(x):
-      result = x / 5.2
-    bool(x):
-      result = not x
-    char | text:
-      result = v
-    none:
-      result = "I have nothing to hide"
-  }
-  println("result = {}", result)
+    result : Value
+    match v {
+        i64(x):
+          result = x + 10
+        f64(x):
+          result = x / 5.2
+        bool(x):
+          result = not x
+        char | text:
+          result = v
+        none:
+          result = "I have nothing to hide"
+    }
+    println("result = {}", result)
 
-  number := get_number(v)
-  if number? {
-    println("number = {}", number)
-  }
+    number := get_number(v)
+    if number? {
+        println("number = {}", number)
+    }
 }
 ```
 
@@ -278,48 +278,48 @@ main() {
 ```
 // PlantUML-like class definition
 class my_class {
-  + x : int           // public
-  # y : float         // protected
-  - z : [int | float] // private
+    + x : int           // public
+    # y : float         // protected
+    - z : [int | float] // private
 
-  ctor(x : int, y : float, z : [int | float]){
-    self.[x, y, z] = x, y, z
-  }
-  
-  + get_info() : str
-  - get_private_info() : hashmap<int, float>
-  + global get_global_info() : tuple<bool, str>
+    ctor(x : int, y : float, z : [int | float]){
+      self.[x, y, z] = x, y, z
+    }
+    
+    + get_info() : str
+    - get_private_info() : hashmap<int, float>
+    + global get_global_info() : tuple<bool, str>
 }
 
 // is the same as
 class MyClass {
-  public x : int
-  protected y : float
-  private z : array<int | float>
+    public x : int
+    protected y : float
+    private z : array<int | float>
 
-  MyClass(x : int, y : float, z : array<int | float>){
-    this.x = x
-    this.y = y
-    this.z = z
-  }
+    MyClass(x : int, y : float, z : array<int | float>){
+        this.x = x
+        this.y = y
+        this.z = z
+    }
 
-  public getInfo() : str
-  private getPrivateInfo() : hashmap<int, float>
-  public static getGlobalInfo() : tuple<bool, str>
+    public getInfo() : str
+    private getPrivateInfo() : hashmap<int, float>
+    public static getGlobalInfo() : tuple<bool, str>
 }
 
 // and is the same as
 class my_cls =
-  pub x : int
-  prot y : float
-  priv z : [int | float]
+    pub x : int
+    prot y : float
+    priv z : [int | float]
 
-  ctor(x, y, z) =
-    me.[x, y, z] = x, y, z
+    ctor(x, y, z) =
+      me.[x, y, z] = x, y, z
 
-  pub getter info : str
-  priv getter priv_info : {int: float}
-  pub global getter global_info : (bool, str)
+    pub getter info : str
+    priv getter priv_info : {int: float}
+    pub global getter global_info : (bool, str)
 ```
 Multiple ways of writing the same thing, essentially giving the programmer the freedom to write code as they want. Rest assured, if syntax can be rewritten in another way, that alternative will never be too strange to understand.
 
@@ -332,9 +332,10 @@ In the code shown above, it might seem confusing to see `{}`, `=` and `:` being 
 // {} or =.
 
 // For example:
-my_func() = ...
+fn my_func() = ...
+
 // is the same as 
-my_func(){ ... }
+fn my_func(){ ... }
 
 // But it's not correct to write
 if condition = ...
@@ -346,6 +347,7 @@ if condition = ...
 
 // For example:
 if condition: ...
+
 // is the same as
 if condition { ... }
 
@@ -367,6 +369,7 @@ if condition { ... }
 - `wstr` : Allocated UTF-8 string
 - `wchar` : UTF-8 codepoint (4 bytes big)
 - `array` : Array list data structure (syntaxic sugar is `[element]`)
+- ``
 - `tuple` : Predefined sequence of types (syntaxic sugar is `(a, b, ...)`)
 - `hashmap` : Hashmap data structure (syntaxic sugar is `{key, value}`)
 - `union` : Tagged union (syntaxic sugar is `a | b | ...`)
@@ -428,8 +431,8 @@ A reference is implicitly taken when its value is assigned. For example, in the 
 * `bool&` : A reference to a `bool`
 * `float &r` : A read-only reference to a `float`
 ```
-add_one(count : int&) =
-  count += 1
+fn add_one(count : int&) =
+    count += 1
 
 x := 1
 add_one(x)
@@ -475,11 +478,16 @@ An array of unknown size is passed as an argument as a single pointer. These arr
 #### Dynamic arrays (aka *vector* in C++, `array` type)
 *Dynamic arrays are complex classes that represent an array that can grow according to its needs. Its memory is on the heap and it only holds a pointer to it. It will allocate memory when it is needed and free memory when it is no longer needed. So, assigning to a dynamic array might free memory and allocate new memory.*
 
-Dynamic arrays are more complicated than the aforementionned ones, because it handles varying amounts of memory, without necessarily knowing how much it needs. However, its implementation is given by the standard library, so don't sweat to much. It is represented by the built-in `array` type. Arrays have a size and capacity. Size is the current number of elements, capacity is the maximum number of elements that the data-structure can hold.
+Dynamic arrays are more complicated than the aforementionned ones, because it handles varying amounts of memory, without necessarily knowing how much it needs. However, its implementation is given by the standard library, so don't sweat to much. It is represented by the built-in `array` type. Dynamic arrays have a size and capacity. Size is the current number of elements, capacity is the maximum number of elements that the data-structure can hold. 
+
+Dynamic arrays can be multi-dimensional, but the number of dimensions must remain constant. Dynamic arrays are 1D by default. When multi-dimensional, their size is represented as an array of integers, where each number is the number of rows, columns, etc. Indexing a dynamic array is the same as fixed arrays and slices.
 
 **Examples:**
 - `array<int>` : *a dynamic array of integers.*
 - `array<float*>` : *a dynamic array of pointers of floats.*
+- `array<float, 2>` : *a dynamic 2D array of floats.*
+- `[float]` : *a dynamic array of floats, but written in syntaxic sugar.*
+- `[float, 2]` : *a dynamic 2D array of floats, but written in syntaxic sugar.*
 
 #### Array indexing, slicing and operations
 Arrays can be handled in very cool and efficient ways in Demos. Long gone are the days of tedious for loops and pointer math. The programmer will be impressed when he can do a bunch of things in a single line. This is the Demos programming language's time to shine.
@@ -497,8 +505,47 @@ Finally, array operations can be divided into 3 categories: arithmetic, repetiti
 
 - Restructuring is making a new array from other arrays by gluing them together. For example, if we want to put together a 100 element array and a 99 x 100 array, we could do `array1 _> array2`. The `_>` operator acts as a "join underneath" operator and will add array1 as the final row of array2 in the result. The opposite operation, "join on top", is represented with the operator `^>`. Furthermore, there is also "join horzontally", represented by `><` (like sticking stuff together). Joining a 1D array with a 2D array will treat it as a column. There is also the transpose operator, `^T`, which rearranges the matrix horizontally and vertically. For example, a 100x200 matrix transposed gives us a 200x100 matrix. These operations are very useful for 2D arrays, but for more dimensions, these operators are rather useless. Instead, methods are provided with additional parameters and details.
 
-## One-liner freak dreams
-A one-liner freak is someone that appreciates the complexity of what you can do in a single line of code. For languages like Python, where a line is limited and a strict building block, a one-liner-slinger will know when their chance is there. There are tales of a one-line slinger from the North, that has furnished and finished a functional singular line of code capable of running the entire game of life in Python. That greatness is to be expected for every Demos user, because this language makes one-line-slinging easier than ever. Firstly, methods on a single object can be chained:
+## Structures
+Structures are basic data structures where all members are public. They cannot use polymorphism, but can use basic inheritance. Like Rust, they can have methods and implement traits. That's pretty much all they can do, and their simplicity is intentional. A struct can provide a constructor, but not a destructor. They can provide operator overloads as well. Properties are not allowed.
+
+```
+struct Vehicle {
+    name : str
+    speed : float = 0.0 // m/s
+    registration : LicensePlate? = none
+    price : uint64 // USD
+
+    ctor(name, speed, price) =
+        me.[name, speed, price] = name, speed, price
+        me.registration = none 
+}
+
+struct Engine {
+    cylinders : u16
+    displacement : float // L
+    turbo : bool = no
+
+    is_legal() : bool = not turbo
+}
+
+fn search_car(name : str, brand : CarBrand) : (uint64, float, Engine)
+
+struct Car from Vehicle {
+    brand : CarBrand
+    engine : Engine
+    windows_tinted : bool = no
+
+    is_legal() : bool =
+        engine.is_legal() and registration? and not windows_tinted
+    
+    ctor(name, brand, registration) =
+        me.[name, brand, registration] = name, brand, registration
+        me.[price, speed, engine] = search_car(name, brand)
+}
+```
+
+## One-liner utilities
+A one-liner master is someone that appreciates the complexity of what you can do in a single line of code. For languages like Python, where a line is limited and a strict building block, a one-liner-slinger will know when their chance is there. There are tales of a one-line slinger from the North, that has furnished and finished a functional singular line of code capable of running the entire game of life in Python. That greatness is to be expected for every Demos user, because this language makes one-line-slinging easier than ever. Firstly, methods on a single object can be chained:
 ```
 // : calls the method, drops the return and keeps the object instead
 my_form:fill_name("DioDogHater"):fill_status("Unemployed").sign()
@@ -554,19 +601,22 @@ my_array := [x for x in 0..100 if x % 2 == 0] // even numbers in [0, 99]
 my_array = [x for x = 0; x < 100; x++ if x % 2 == 0]
 
 // Create an array of powers of 2
-two_powers = [2^i for i in 1..=64] // from 2^1 to 2^64
+two_powers = [2**i for i in 1..=64] // from 2^1 to 2^64
 
 // Create an array with a range
 my_range := [0..=100] // 0 to 100
 
 // Create a 2D array based on their indices
-my_matrix := [i * j, for i in 0..16, for j in 0..16]
+my_matrix := [[i * j for i in 0..16] for j in 0..16]
 ```
 Now, what if we wanted to generate elements of an array that depend on the last elements?
 ```
 // Normally, _ is like a trash bin, where a value is discarded.
 // However, _ is the current structure we are defining in this case.
 my_array := [1, 2, 3, x - _[-1] for 0..10]
+
+// Fibonacci sequence, in an array expression?
+fibo := [0, 1, _[-1] + _[-2] for 0..10]
 
 // So for example, let's create a structure
 @optimize // rearranges the structure to minimize padding
@@ -578,4 +628,17 @@ struct integers {
 
 // 1e6 = 1 * 10^6
 x := integers{a = 1e6, b = _.a / 2, c = _.a & 0xFF}
+```
+We can also do some cool things with loops:
+```
+// Count number of digits in x
+x := 1510232
+digits := count for i = x; i > 0; i /= 10
+
+// Sum all even numbers between 0 and 100
+even_sum := sum x for x in 0..=100 if x % 0 == 0
+
+// Get the factorial of 5
+// Multiply all whole numbers under 5 and above 0 to 5
+five_facto := mult x for x in 1..=5
 ```
