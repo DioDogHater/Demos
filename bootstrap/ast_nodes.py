@@ -148,12 +148,35 @@ class ASTNode(ABC):
     """Basic AST node, mostly for statements, declarations and definitions."""
     def __init__(self, parent : ASTNode | None = None) -> None:
         self.__parent : ASTNode | None = parent
+        self.__context : Context = Context(parent.context if parent else None)
 
     @property
     def parent(self) -> ASTNode | None:
         return self.__parent
 
     @property
+    def context(self) -> Context:
+        return self.__context
+
+    @property
     @abstractmethod
     def token(self) -> Token:
         pass
+
+    @abstractmethod
+    def exec(self) -> Any:
+        pass
+
+class TestStmt(ASTNode):
+    def __init__(self, test : Token, parent : ASTNode | None = None) -> None:
+        super().__init__(parent)
+        self.__test : Token = test
+    
+    @override
+    @property
+    def token(self) -> Token:
+        return self.__test
+    
+    @override
+    def exec(self) -> None:
+        print("Test from Demos!")

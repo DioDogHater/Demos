@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import override
 
 import re
 from collections.abc import Callable
@@ -18,6 +19,7 @@ class TkType(IntEnum):
     CHAR = 3
     STRING = 4
     OPERATOR = 5
+    UNKNOWN = -1
 
 class Token:
     """
@@ -68,6 +70,10 @@ class Token:
 
     def __repr__(self) -> str:
         return f"Token({self.type.name}, \"{self.value}\", {self.line}, {self.offset})"
+
+class VirtualToken(Token):
+    def __init__(self, value : str, type : TkType = TkType.UNKNOWN):
+        super().__init__(type, value, -1, -1)
 
 class LexerError(Exception):
     """Error during lexical analysis."""
