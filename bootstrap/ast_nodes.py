@@ -139,10 +139,44 @@ class Context:
 
     def __init__(self, parent : Context | None = None) -> None:
         self.__parent : Context | None = parent
+        self.__funcs : dict[str, Function] = []
+        self.__vars : dict[str, Variable] = []
 
     @property
     def parent(self) -> Context | None:
         return self.__parent
+    
+    @property
+    def funcs(self) -> dict[str, Function]:
+        return self.__funcs
+    
+    @property
+    def vars(self) -> dict[str, Function]:
+        return self.__vars
+    
+    def get_local_var(self, name : str) -> Variable | None:
+        return self.__vars.get(name)
+    
+    def get_extern_var(self, name : str) -> Variable | None:
+        if self.__parent:
+            return self.__parent.get_var(name)
+    
+    def get_var(self, name : str) -> Variable | None:
+        if not (v := self.get_local_var(name)) and self.__parent:
+            return self.__parent.get_var(name)
+        return v
+    
+    def get_local_func(self, name : str) -> Function | None:
+        return self.__funcs.get(name)
+    
+    def get_extern_func(self, name : str) -> Function | None:
+        if self.__parent:
+            return self.__parent.get_func(name)
+    
+    def get_func(self, name : str) -> Variable | None:
+        if not (f := self.get_local_func(name)) and self.__parent:
+            return self.__parent.get_func(name)
+        return f
 
 class ASTNode(ABC):
     """Basic AST node, mostly for statements, declarations and definitions."""
@@ -164,9 +198,10 @@ class ASTNode(ABC):
         pass
 
     @abstractmethod
-    def exec(self) -> Any:
+    def exec(self, source : Lexer) -> Any:
         pass
 
+# TODO Remove
 class TestStmt(ASTNode):
     def __init__(self, test : Token, parent : ASTNode | None = None) -> None:
         super().__init__(parent)
@@ -178,5 +213,19 @@ class TestStmt(ASTNode):
         return self.__test
     
     @override
-    def exec(self) -> None:
+    def exec(self, _source : Lexer) -> None:
         print("Test from Demos!")
+
+class ExprStmt(ASTNode):
+    def __init__(self, expr : Expr, parent : ASTNode | None = None) -> None:
+        super().__init__(parent)
+        self.__expr : Expr = expr
+    
+    @override
+    @property
+    def token(self) -> Token:
+        return self.__expr.token
+    
+    @override
+    def exec(self, source : Lexer) -> Any:
+        return self.__expr.evaluate(source, self.context)

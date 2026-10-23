@@ -46,6 +46,7 @@ class Literal(Expr):
     def token(self) -> Token:
         return self.__value
 
+    @override
     def evaluate(self, source : Lexer, context : Context) -> Any:
         if self.__value.type == TkType.INT:
             return int(self.__value.value, base=0)
@@ -56,5 +57,30 @@ class Literal(Expr):
         elif self.__value.type == TkType.CHAR:
             return self.__value.value
 
+    @override
     def generate(self, source : Lexer, context : Context, generator : Generator) -> None:
         pass
+
+class VariableDef(Expr):
+    def __init__(self, name : Token, value : Expr | None) -> None:
+        super().__init__()
+        self.__name : Token = name
+        self.__value : Expr | None = value
+    
+    @property
+    def name(self) -> str:
+        return self.__name.value
+    
+    @property
+    def value(self) -> Expr | None:
+        return self.__value
+    
+    @override
+    @property
+    def token(self) -> Token:
+        return self.__name
+    
+    @override
+    def evaluate(self, source : Lexer, context : Context) -> Any:
+        if self.value: 
+            return self.value.evaluate(source, context)
