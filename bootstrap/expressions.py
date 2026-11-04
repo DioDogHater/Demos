@@ -1,6 +1,5 @@
 from ast_nodes import *
 
-
 """
 class Expr(ABC):
     @property
@@ -32,7 +31,7 @@ def convert_string(string : str) -> str:
                 .replace("\\\\", "\\") \
                 .replace("\\'", "\'") \
                 .replace("\\\"", "\"")
-    
+
     # TODO Handle \xXX, \XX, \uXXXX and \UXXXXXXXX
     return rep
 
@@ -47,14 +46,26 @@ class Literal(Expr):
         return self.__value
 
     @override
+    def typeof(self, context : Context) -> Type:
+        if self.__value.type == TkType.INT:
+            return Int(64)
+        elif self.__value.type == TkType.FLOAT:
+            return Float(64)
+        elif self.__value.type == TkType.CHAR:
+            return Char()
+        elif self.__value.type == TkType.STRING:
+            pass # TODO
+        elif self.__value.type == TkType.NAME:
+            if var := context.get_var(self.__value.value):
+                return var.type
+
+    @override
     def evaluate(self, source : Lexer, context : Context) -> Any:
         if self.__value.type == TkType.INT:
             return int(self.__value.value, base=0)
         elif self.__value.type == TkType.FLOAT:
             return float(self.__value.value)
-        elif self.__value.type == TkType.STRING:
-            return self.__value.value
-        elif self.__value.type == TkType.CHAR:
+        elif self.__value.type == TkType.STRING or self.__value.type == TkType.CHAR:
             return self.__value.value
 
     @override
@@ -62,25 +73,32 @@ class Literal(Expr):
         pass
 
 class VariableDef(Expr):
-    def __init__(self, name : Token, value : Expr | None) -> None:
+    def __init__(self, name : Token, value : Expr | None, type : Type | None = None) -> None:
         super().__init__()
         self.__name : Token = name
+        self.__type : Type | None = type
         self.__value : Expr | None = value
-    
+
     @property
     def name(self) -> str:
         return self.__name.value
-    
+
+    @property
+    def type(self) -> Type | None:
+        return self.__type
+
     @property
     def value(self) -> Expr | None:
         return self.__value
-    
-    @override
+
     @property
+    @override
     def token(self) -> Token:
         return self.__name
-    
+
     @override
     def evaluate(self, source : Lexer, context : Context) -> Any:
-        if self.value: 
+        if self.value.typeof
+        context.add_var(Variable(self.name, self.type))
+        if self.value:
             return self.value.evaluate(source, context)

@@ -368,8 +368,8 @@ if condition { ... }
 - `char` : ASCII character
 - `wstr` : Allocated UTF-8 string
 - `wchar` : UTF-8 codepoint (4 bytes big)
-- `array` : Array list data structure (syntaxic sugar is `[element]`)
-- ``
+- `array` : Array (*aka vector*) data structure (syntaxic sugar is `[element]`)
+- `arraylist` : Array-list data structure
 - `tuple` : Predefined sequence of types (syntaxic sugar is `(a, b, ...)`)
 - `hashmap` : Hashmap data structure (syntaxic sugar is `{key, value}`)
 - `union` : Tagged union (syntaxic sugar is `a | b | ...`)
@@ -642,3 +642,9 @@ even_sum := sum x for x in 0..=100 if x % 0 == 0
 // Multiply all whole numbers under 5 and above 0 to 5
 five_facto := mult x for x in 1..=5
 ```
+
+## Future plans
+For now, the bootstrap compiler is going to be implemented in production grade OOP Python. However, when I will finish most of the compiler's functionality, I will attempt to write
+its replacement in pure Demos, granted I'll have already made a decent standard library at that point. If someone does stumble upon this project, feel free to share
+your additions. Just know that I'm pretty fixed on some ideas about the language, so you might talk to a wall if you're telling me to change the language drastically.
+Also, if you're looking to contribute, I'm willing to accept good quality, clear, robust and human-written code. I won't accept any AI generated or AI assisted contributions.
