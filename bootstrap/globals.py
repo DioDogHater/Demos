@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Self
 
 
+# Utils
+def align(x : int, alignment : int = 1) -> int:
+    return (x + alignment - 1) // alignment * alignment
+
 class CompilerTarget:
     def __init__(self, name : str, triple : tuple[str, str, str], bits : int, pointer_size : int) -> None:
         self.__name : str = name

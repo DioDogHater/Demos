@@ -58,6 +58,10 @@ class Literal(Expr):
         elif self.__value.type == TkType.NAME:
             if var := context.get_var(self.__value.value):
                 return var.type
+            elif self.__value.value in ("true", "yes", "false", "no"):
+                return Bool()
+            elif self.__value.value == "nul" or self.__value.value == "null":
+                return Pointer(AnyType())
 
     @override
     def evaluate(self, source : Lexer, context : Context) -> Any:
@@ -98,7 +102,7 @@ class VariableDef(Expr):
 
     @override
     def evaluate(self, source : Lexer, context : Context) -> Any:
-        if self.value.typeof
-        context.add_var(Variable(self.name, self.type))
-        if self.value:
-            return self.value.evaluate(source, context)
+        if self.value and self.type:
+            context.add_var(Variable(self.name, self.type))
+            if self.value:
+                return self.value.evaluate(source, context)

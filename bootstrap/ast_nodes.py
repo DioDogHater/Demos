@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, override
 
 from generator import *
@@ -53,6 +54,10 @@ class Type(ABC):
         # If size = 0, is not a sized value (like none or any)
 
     @property
+    def align(self) -> int:
+        return self.size
+
+    @property
     def methods(self) -> list[Method]:
         return []
 
@@ -66,7 +71,7 @@ class Type(ABC):
     def __str__(self) -> str: return repr(self)
 
     def __eq__(self, other : object) -> bool:
-        return isinstance(other, self.__class__)
+        return isinstance(other, type(self))
 
 class Void(Type):
     """Type where none is the only value. Does not contain any data."""
@@ -87,6 +92,7 @@ class Int(Type):
         Args:
             size (int) : The number of bits in the type.
             signed (bool) : If the integer type is signed."""
+        super().__init__()
         self.__size : int = size // 8
         self.__signed : bool = signed
 
@@ -122,6 +128,7 @@ class SizeInt(Int):
 class Float(Type):
     """Floating point number."""
     def __init__(self, size : int) -> None:
+        super().__init__()
         self.__size : int = size // 8
 
     @property
@@ -181,10 +188,27 @@ class WChar(Char):
     def __repr__(self) -> str:
         return "wchar"
 
+class AnyType(Type):
+    """Any type. Used for pointers, arrays and other similar stuff."""
+
+    @property
+    @override
+    def size(self) -> int:
+        return 0
+
+    @override
+    def is_compatible(self, value: Expr) -> bool:
+        return False
+
+    @override
+    def __repr__(self) -> str:
+        return "any"
+
 class Pointer(Type):
     """Pointer to another type."""
 
     def __init__(self, underlying : Type) -> None:
+        super().__init__()
         self.__underlying : Type = underlying
 
     @property
@@ -198,7 +222,8 @@ class Pointer(Type):
 
     @override
     def is_compatible(self, value: Expr) -> bool:
-        return super().is_compatible(value)
+        v = value.typeof
+        return isinstance(v, Pointer) and (v.underlying == self.underlying or isinstance(self.underlying, AnyType) or isinstance(v.underlying, AnyType))
 
     @override
     def __repr__(self) -> str:
@@ -228,10 +253,16 @@ class Arg:
     def is_varg(self) -> bool:
         return self.__varg
 
+    def __repr__(self) -> str:
+        return f"{self.name}:{self.type}{f"={self.default}" if self.default else ""}"
+
+    def __str__(self) -> str: return repr(self)
+
 class FuncType(Type):
     """Basic function type"""
 
     def __init__(self, return_type : Type, args : tuple[Arg, ...]) -> None:
+        super().__init__()
         self.__return_type : Type = return_type
         self.__args : tuple[Arg, ...] = args
 
@@ -239,6 +270,11 @@ class FuncType(Type):
     @override
     def size(self) -> int:
         return self.return_type.size
+
+    @property
+    @override
+    def align(self) -> int:
+        return self.return_type.align
 
     @property
     def return_type(self) -> Type:
@@ -294,6 +330,183 @@ class Method(Function):
     @override
     def __repr__(self) -> str:
         return "."+super().__repr__()
+
+class Member(Arg):
+    """Struct / class member."""
+
+class Struct(Type):
+    """
+    Simple data structure with only members, methods and optionally a constructor.
+    """
+    def __init__(self, name : str, parent : Struct | None = None) -> None:
+        super().__init__()
+        self.__name : str = name
+        self.__parent : Struct | None = None
+        self.__ctors : list[Method] = []
+        self.__members : list[Member] = []
+
+    @property
+    @override
+    def size(self) -> int:
+        sz : int = 0
+        for m in self.__members:
+            sz = align(sz, m.type.align) + m.type.size
+        return sz
+
+    @property
+    @override
+    def align(self) -> int:
+        return max(m.type.align for m in self.__members)
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def parent(self) -> Struct | None:
+        return self.__parent
+
+    @property
+    def ctors(self) -> list[Method]:
+        return self.__ctors
+
+    @property
+    def members(self) -> list[Member]:
+        return self.__members
+
+    def add_member(self, member : Member) -> None:
+        # TODO : Add safeguards to avoid member name clashing, etc.
+        self.__members.append(member)
+
+    def add_ctor(self, ctor : Method) -> None:
+        self.__ctors.append(ctor)
+
+    @override
+    def __repr__(self) -> str:
+        return f"{self.name}{{{", ".join(str(m) for m in self.members)}}}"
+
+class Property:
+    def __init__(self, name : str, getter : Method) -> None:
+        self.__name : str = name
+        self.__getter : Method = getter
+        self.__setters : list[Method] = []
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def getter(self) -> Method:
+        return self.__getter
+
+    @property
+    def setters(self) -> list[Method]:
+        return self.__setters
+
+    def add_setter(self, setter : Method) -> None:
+        self.__setters.append(setter)
+
+class TypeParam:
+    TYPE = 0
+    ARG = 1
+    VARGS = 2
+
+    def __init__(self, name : str, type : int, info : tuple[Any, ...]) -> None:
+        self.__name : str = name
+        self.__arg_type : int = type
+        self.__info : tuple[Any, ...] = info
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def arg_type(self) -> int:
+        return self.__arg_type
+
+    @property
+    def info(self) -> tuple[Any, ...]:
+        return self.__info
+
+    def __repr__(self) -> str:
+        if self.arg_type == TypeParam.TYPE:
+            return f"{self.name}:type"
+        elif self.arg_type == TypeParam.ARG:
+            return f"{self.name}:{self.info[0]}"
+        elif self.arg_type == TypeParam.VARGS:
+            return f"...{self.name}:{self.info[0]}"
+        return f"<invalid arg_type={self.arg_type}>"
+
+class Class(Struct):
+    """
+    OOP objects; can have polymorphism, properties, encapsulation, etc.
+    Most complex types that can be defined.
+    """
+    def __init__(self, name : str, type_params : tuple[TypeParam, ...] = (), parent : Struct | Class | None = None) -> None:
+        super().__init__(name, parent)
+        self.__type_params : tuple[TypeParam, ...] = type_params
+        self.__overloads : list[Method] = []
+        self.__properties : list[Property] = []
+        self.__dtor : Method | None = None
+
+    @property
+    def overloads(self) -> list[Method]:
+        return self.__overloads
+
+    @property
+    def properties(self) -> list[Property]:
+        return self.__properties
+
+    @property
+    def dtor(self) -> Method | None:
+        return self.__dtor
+
+    @dtor.setter
+    def dtor(self, method : Method) -> None:
+        self.__dtor = method
+
+    def add_overload(self, overload : Method) -> None:
+        # TODO : Check for any overlapping overloads blablabla
+        self.__overloads.append(overload)
+
+    def add_property(self, property : Property) -> None:
+        # TODO : Check for any overlapping properties blablabla
+        self.__properties.append(property)
+
+    @override
+    def __repr__(self) -> str:
+        return f"{self.name}({", ".join(str(m) for m in self.members)})"
+
+class ParamClass(Type):
+    # TODO : Change signature so that params is accurate
+    def __init__(self, base : Class, params : tuple[Any, ...]) -> None:
+        self.__base : Class = base
+        self.__params : tuple[Any, ...] = params
+
+    @property
+    @override
+    def size(self) -> int:
+        return self.__base.size
+
+    @property
+    @override
+    def align(self) -> int:
+        return self.__base.align
+
+    @property
+    def base(self) -> Class:
+        return self.__base
+
+    @property
+    def params(self) -> tuple[Any, ...]:
+        return self.__params
+
+    @override
+    def is_compatible(self, value: Expr) -> bool:
+        return self == value.typeof
+
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, ParamClass) and self.base == value.base and self.params == value.params
 
 class Variable(ABC):
     """Generic variable."""
